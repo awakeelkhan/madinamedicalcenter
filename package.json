@@ -1,0 +1,62 @@
+{
+  "name": "almadina-pharmacy",
+  "version": "1.0.0",
+  "description": "Al Madina Medical & Surgical Center — Management System",
+  "main": "main.js",
+  "author": "Al Madina Medical Center Batara Buner",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64"
+  },
+  "dependencies": {
+    "sql.js": "^1.12.0"
+  },
+  "devDependencies": {
+    "electron": "^29.1.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.almadina.medical",
+    "productName": "Al Madina Medical Center",
+    "copyright": "Al Madina Medical & Surgical Center, Batara Buner",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "database/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/sql.js/dist/**"
+    ],
+    "extraResources": [],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Al Madina Medical Center",
+      "deleteAppDataOnUninstall": false,
+      "license": null
+    },
+    "portable": {
+      "artifactName": "AlMadina-Medical-Portable.exe"
+    }
+  }
+}

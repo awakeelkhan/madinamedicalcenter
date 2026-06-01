@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pharmacy Management</title>
+  <link href="vendor/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="vendor/css/all.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div id="app-wrapper">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-pills"></i>
+        </div>
+        <div class="sidebar-title">
+          <span id="sidebarPharmacyName">Almadina Medical Center</span>
+          <small>Medical Center Batara</small>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">FRONT DESK</div>
+        <a href="#" class="nav-item" data-page="frontdesk">
+          <i class="fas fa-hospital-user"></i><span>Front Desk</span>
+        </a>
+        <a href="#" class="nav-item" data-page="pathology">
+          <i class="fas fa-microscope"></i><span>Pathology</span>
+        </a>
+        <a href="#" class="nav-item" data-page="sehatcard">
+          <i class="fas fa-id-card"></i><span>Sehat Card</span>
+        </a>
+
+        <div class="nav-section-label">RETAIL</div>
+        <a href="#" class="nav-item active" data-page="pos">
+          <i class="fas fa-cash-register"></i><span>POS Sale</span>
+        </a>
+        <a href="#" class="nav-item" data-page="shelf">
+          <i class="fas fa-store"></i><span>Shelf / Stock</span>
+        </a>
+        <a href="#" class="nav-item" data-page="finance">
+          <i class="fas fa-coins"></i><span>Finance</span>
+        </a>
+
+        <div class="nav-section-label">STOCK</div>
+        <a href="#" class="nav-item" data-page="purchases">
+          <i class="fas fa-truck"></i><span>Add Stock</span>
+        </a>
+        <a href="#" class="nav-item" data-page="inventory">
+          <i class="fas fa-boxes"></i><span>Inventory</span>
+        </a>
+
+        <div class="nav-section-label">MORE</div>
+        <a href="#" class="nav-item" data-page="dashboard">
+          <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="sales">
+          <i class="fas fa-file-invoice"></i><span>Wholesale</span>
+        </a>
+        <a href="#" class="nav-item" data-page="customers">
+          <i class="fas fa-users"></i><span>Customers</span>
+        </a>
+        <a href="#" class="nav-item" data-page="reports">
+          <i class="fas fa-chart-bar"></i><span>Reports</span>
+        </a>
+        <a href="#" class="nav-item" data-page="backup">
+          <i class="fas fa-database"></i><span>Backup</span>
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <i class="fas fa-cog"></i><span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="hypercloud-brand">
+        <a href="#" title="Developed by HyperCloud.pk">⚡ HyperCloud.pk</a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <i class="fas fa-user-circle me-2"></i>
+          <span id="sidebarUser">Admin</span>
+          <span class="badge bg-success ms-1" id="sidebarRole">admin</span>
+        </div>
+        <button class="btn-logout" id="logoutBtn" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+      <!-- Topbar -->
+      <div id="topbar">
+        <div class="topbar-left">
+          <h5 id="pageTitle">Dashboard</h5>
+        </div>
+        <div class="topbar-right">
+          <span id="topbarDate" class="text-muted small me-3"></span>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div id="page-content"></div>
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+    <div id="appToast" class="toast align-items-center border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONTAINER -->
+  <div id="modalContainer"></div>
+
+  <script src="vendor/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Modules -->
+  <script src="modules/pos.js"></script>
+  <script src="modules/shelf.js"></script>
+  <script src="modules/finance.js"></script>
+  <script src="modules/dashboard.js"></script>
+  <script src="modules/sales.js"></script>
+  <script src="modules/purchases.js"></script>
+  <script src="modules/inventory.js"></script>
+  <script src="modules/customers.js"></script>
+  <script src="modules/suppliers.js"></script>
+  <script src="modules/reports.js"></script>
+  <script src="modules/backup.js"></script>
+  <script src="modules/settings.js"></script>
+  <script src="modules/frontdesk.js"></script>
+  <script src="modules/pathology.js"></script>
+  <script src="modules/sehatcard.js"></script>
+
+  <!-- App router (must load last) -->
+  <script src="app.js"></script>
+</body>
+</html>

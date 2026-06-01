@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pharmacy Login</title>
+  <link href="vendor/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="vendor/css/all.min.css" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .logo-area { text-align: center; margin-bottom: 28px; }
+    .logo-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 32px; color: #fff;
+      box-shadow: 0 4px 15px rgba(40,167,69,0.4);
+    }
+    .logo-area h2 { color: #1a2035; font-weight: 700; font-size: 22px; }
+    .logo-area p { color: #6c757d; font-size: 13px; margin-top: 4px; }
+    .form-label { font-size: 13px; font-weight: 600; color: #495057; }
+    .form-control {
+      border: 1.5px solid #dee2e6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,0.15); }
+    .input-group-text {
+      background: #f8f9fa; border: 1.5px solid #dee2e6; border-radius: 8px 0 0 8px;
+      color: #6c757d;
+    }
+    .input-group .form-control { border-radius: 0 8px 8px 0; border-left: none; }
+    .btn-login {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      border: none; border-radius: 8px;
+      padding: 12px; font-size: 15px; font-weight: 600;
+      color: #fff; width: 100%;
+      box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(40,167,69,0.4); color: #fff; }
+    .btn-login:active { transform: translateY(0); }
+    .alert-error {
+      background: #fff5f5; border: 1px solid #fec9c9; color: #dc3545;
+      border-radius: 8px; padding: 10px 14px; font-size: 13px;
+      display: none;
+    }
+    .footer-text { text-align: center; color: #adb5bd; font-size: 12px; margin-top: 20px; }
+    .hc-brand { text-align:center; margin-top:10px; font-size:11px; color:rgba(255,255,255,.4); }
+    .hc-brand a { color:rgba(255,255,255,.6); text-decoration:none; font-weight:600; }
+    .hc-brand a:hover { color:#fff; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fas fa-pills"></i></div>
+      <h2 id="pharmaName">Wholesale Pharmacy</h2>
+      <p>Management System</p>
+    </div>
+
+    <div class="alert-error" id="errMsg">
+      <i class="fas fa-exclamation-circle me-2"></i><span id="errText"></span>
+    </div>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-user"></i></span>
+          <input type="text" class="form-control" id="username" placeholder="Enter username" required/>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-lock"></i></span>
+          <input type="password" class="form-control" id="password" placeholder="Enter password" required/>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn">
+        <i class="fas fa-sign-in-alt me-2"></i>Login
+      </button>
+    </form>
+
+    <p class="footer-text">Default: admin / admin123</p>
+  </div>
+  <div class="hc-brand">
+    ⚡ Developed by <a href="https://hypercloud.pk" target="_blank">HyperCloud.pk</a>
+  </div>
+
+  <script>
+    async function loadPharmacyName() {
+      try {
+        const settings = await window.api.getSettings();
+        if (settings && settings.pharmacy_name) {
+          document.getElementById('pharmaName').textContent = settings.pharmacy_name;
+        }
+      } catch(_) {}
+    }
+    loadPharmacyName();
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errDiv = document.getElementById('errMsg');
+      const errText = document.getElementById('errText');
+      errDiv.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const user = await window.api.login({ username, password });
+        if (user) {
+          window.api.loginSuccess(user);
+        } else {
+          errText.textContent = 'Invalid username or password';
+          errDiv.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login';
+        }
+      } catch (err) {
+        errText.textContent = 'Login error: ' + err.message;
+        errDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login';
+      }
+    });
+  </script>
+</body>
+</html>
