@@ -638,13 +638,20 @@ window.SehatCardPage = {
   },
 
   _printHeader(clinic, s) {
+    const logoB64  = s.logo_base64 || '';
+    const tagline  = s.tagline     || '';
+    const regNo    = s.reg_no      || '';
+    const leftLogo = logoB64
+      ? `<img src="${logoB64}" style="width:90px;height:75px;object-fit:contain"/>`
+      : this._amcLogoSvg(90);
     return `
       <table width="98%" border="0" cellpadding="2" cellspacing="0" align="center">
         <tr>
-          <td width="16%" align="center" valign="middle">${this._amcLogoSvg(90)}</td>
+          <td width="16%" align="center" valign="middle">${leftLogo}</td>
           <td align="center" valign="middle">
             <h1 style="margin:0;font-size:20px;font-weight:900;color:#000">${clinic}</h1>
-            <h3 style="margin:3px 0;font-size:12px;font-weight:400;color:#000">${s.address||'Batara Buner'}</h3>
+            ${tagline ? `<div style="font-size:11px;color:#555;margin:2px 0">${tagline}</div>` : ''}
+            <h3 style="margin:3px 0;font-size:12px;font-weight:400;color:#000">${s.address||'Batara Buner'}${regNo ? ' &nbsp;|&nbsp; Reg: '+regNo : ''}</h3>
             <h3 style="margin:3px 0;font-size:13px;font-weight:700;color:#000">SEHAT SAHULAT PROGRAM</h3>
           </td>
           <td width="23%" align="center" valign="middle" style="overflow:hidden">${this._sehatLogoSvg(120,52)}</td>

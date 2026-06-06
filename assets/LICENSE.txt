@@ -1,0 +1,35 @@
+AL MADINA MEDICAL CENTER — MANAGEMENT SYSTEM
+SOFTWARE LICENSE AGREEMENT
+
+Developed by: HyperCloud.pk (Abdul Wakeel)
+Contact: hypercloud.pk
+
+Copyright (c) 2024-2026 HyperCloud.pk. All rights reserved.
+
+This software is licensed, not sold. By installing or using this software
+you agree to the following terms:
+
+1. LICENSE GRANT
+   A valid license key is required to activate and use this software.
+   Each license key is issued by HyperCloud.pk and is tied to a single
+   installation. You may not share, transfer, or sublicense the key.
+
+2. RESTRICTIONS
+   You may not reverse engineer, decompile, or modify this software.
+   You may not distribute or resell copies of this software.
+
+3. DATA OWNERSHIP
+   All patient and medical data stored by this software belongs entirely
+   to your organization. HyperCloud.pk has no access to your data.
+
+4. SUPPORT & UPDATES
+   Software support and updates are provided by HyperCloud.pk as agreed
+   in your service contract.
+
+5. DISCLAIMER
+   This software is provided "as is" without warranty of any kind.
+   HyperCloud.pk shall not be liable for any loss of data or disruption
+   to medical services arising from use of this software.
+
+For support: HyperCloud.pk — Abdul Wakeel
+WhatsApp / Phone: contact via hypercloud.pk

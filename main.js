@@ -224,6 +224,28 @@ ipcMain.handle('print-window', async () => {
   return true;
 });
 
+// ─── LOGO / BRANDING ─────────────────────────────────────────────────────────
+ipcMain.handle('select-logo-file', async () => {
+  const win = mainWindow || BrowserWindow.getFocusedWindow();
+  const result = await dialog.showOpenDialog(win, {
+    title: 'Select Hospital Logo',
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg'] }]
+  });
+  return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.handle('read-file-base64', (e, filePath) => {
+  try {
+    const ext  = path.extname(filePath).toLowerCase().slice(1);
+    const mime = ext === 'svg' ? 'image/svg+xml' : ext === 'png' ? 'image/png' : 'image/jpeg';
+    const data = fs.readFileSync(filePath);
+    const b64  = data.toString('base64');
+    if (b64.length > 700000) return { ok: false, error: 'Image too large (max ~500KB)' };
+    return { ok: true, data: `data:${mime};base64,${b64}` };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
 // ─── LICENSE ─────────────────────────────────────────────────────────────────
 ipcMain.handle('get-install-id', () => appconfig.getInstallId());
 

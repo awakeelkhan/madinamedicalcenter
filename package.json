@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Al Madina Medical & Surgical Center — Management System",
   "main": "main.js",
-  "author": "Al Madina Medical Center Batara Buner",
+  "author": "HyperCloud.pk — Abdul Wakeel",
   "license": "ISC",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --x64",
-    "build:portable": "electron-builder --win portable --x64"
+    "build:portable": "electron-builder --win portable --x64",
+    "keygen": "node keygen.js"
   },
   "dependencies": {
     "sql.js": "^1.12.0"
@@ -53,7 +54,11 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Al Madina Medical Center",
       "deleteAppDataOnUninstall": false,
-      "license": null
+      "license": "assets/LICENSE.txt",
+      "installerSidebar": null,
+      "uninstallerSidebar": null,
+      "artifactName": "AlMadina-MedicalCenter-Setup-${version}.exe",
+      "differentialPackage": true
     },
     "portable": {
       "artifactName": "AlMadina-Medical-Portable.exe"

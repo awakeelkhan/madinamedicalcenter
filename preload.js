@@ -120,6 +120,10 @@ contextBridge.exposeInMainWorld('api', {
   // Print
   printWindow: () => ipcRenderer.invoke('print-window'),
 
+  // Logo / Branding
+  selectLogoFile:  ()        => ipcRenderer.invoke('select-logo-file'),
+  readFileBase64:  (filePath) => ipcRenderer.invoke('read-file-base64', filePath),
+
   // License
   getInstallId:    ()    => ipcRenderer.invoke('get-install-id'),
   activateLicense: (key) => ipcRenderer.invoke('activate-license', key),

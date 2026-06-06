@@ -26,23 +26,59 @@ window.SettingsPage = {
         <!-- Pharmacy Settings -->
         <div class="col-md-6">
           <div class="card">
-            <div class="card-header"><i class="fas fa-store me-2 text-primary"></i>Pharmacy Info</div>
+            <div class="card-header"><i class="fas fa-hospital me-2 text-primary"></i>Hospital / Clinic Info</div>
             <div class="card-body">
+
+              <!-- Logo upload -->
               <div class="mb-3">
-                <label class="form-label">Pharmacy Name</label>
+                <label class="form-label fw-semibold">Hospital Logo</label>
+                <div class="d-flex align-items-center gap-3">
+                  <div id="logoPreview" style="width:90px;height:64px;border:2px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f8f9fa;overflow:hidden;flex-shrink:0">
+                    ${settings.logo_base64
+                      ? `<img src="${settings.logo_base64}" style="max-width:100%;max-height:100%;object-fit:contain"/>`
+                      : `<i class="fas fa-hospital fa-2x text-muted"></i>`}
+                  </div>
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm d-block mb-1" onclick="SettingsPage._uploadLogo()">
+                      <i class="fas fa-upload me-1"></i>Upload Logo
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm d-block" onclick="SettingsPage._clearLogo()">
+                      <i class="fas fa-times me-1"></i>Remove
+                    </button>
+                    <div class="text-muted mt-1" style="font-size:10px">PNG, JPG, SVG — max 500KB<br/>Used on all printouts</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Hospital / Clinic Name</label>
                 <input type="text" class="form-control" id="setPharmacyName" value="${settings.pharmacy_name || ''}"/>
               </div>
               <div class="mb-3">
-                <label class="form-label">Address</label>
-                <input type="text" class="form-control" id="setAddress" value="${settings.address || ''}"/>
+                <label class="form-label">Tagline / Speciality</label>
+                <input type="text" class="form-control" id="setTagline"
+                  value="${settings.tagline || ''}" placeholder="e.g. Quality Healthcare for All"/>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Phone</label>
-                <input type="text" class="form-control" id="setPhone" value="${settings.phone || ''}"/>
+              <div class="row g-2 mb-3">
+                <div class="col-8">
+                  <label class="form-label">Address</label>
+                  <input type="text" class="form-control" id="setAddress" value="${settings.address || ''}"/>
+                </div>
+                <div class="col-4">
+                  <label class="form-label">Reg. No.</label>
+                  <input type="text" class="form-control" id="setRegNo"
+                    value="${settings.reg_no || ''}" placeholder="KP-2024-001"/>
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Currency Symbol</label>
-                <input type="text" class="form-control" id="setCurrency" value="${settings.currency || 'PKR'}" style="width:120px"/>
+              <div class="row g-2 mb-3">
+                <div class="col-7">
+                  <label class="form-label">Phone</label>
+                  <input type="text" class="form-control" id="setPhone" value="${settings.phone || ''}"/>
+                </div>
+                <div class="col-5">
+                  <label class="form-label">Currency</label>
+                  <input type="text" class="form-control" id="setCurrency" value="${settings.currency || 'PKR'}"/>
+                </div>
               </div>
               <button class="btn btn-primary" onclick="SettingsPage.saveSettings()">
                 <i class="fas fa-save me-1"></i>Save Settings
@@ -206,15 +242,37 @@ window.SettingsPage = {
     this._loadDbPath();
   },
 
+  async _uploadLogo() {
+    const filePath = await window.api.selectLogoFile();
+    if (!filePath) return;
+    const res = await window.api.readFileBase64(filePath);
+    if (!res || !res.ok) { showToast(res?.error || 'Failed to read image', 'danger'); return; }
+    await window.api.saveSettings({ logo_base64: res.data });
+    App.settings.logo_base64 = res.data;
+    document.getElementById('logoPreview').innerHTML =
+      `<img src="${res.data}" style="max-width:100%;max-height:100%;object-fit:contain"/>`;
+    showToast('Logo updated! Will appear on all printouts.', 'success');
+  },
+
+  async _clearLogo() {
+    await window.api.saveSettings({ logo_base64: '' });
+    App.settings.logo_base64 = '';
+    document.getElementById('logoPreview').innerHTML =
+      `<i class="fas fa-hospital fa-2x text-muted"></i>`;
+    showToast('Logo removed.', 'success');
+  },
+
   async saveSettings() {
     const s = {
       pharmacy_name: document.getElementById('setPharmacyName').value.trim(),
-      address: document.getElementById('setAddress').value.trim(),
-      phone: document.getElementById('setPhone').value.trim(),
-      currency: document.getElementById('setCurrency').value.trim() || 'PKR'
+      tagline:       (document.getElementById('setTagline')?.value  || '').trim(),
+      reg_no:        (document.getElementById('setRegNo')?.value    || '').trim(),
+      address:       document.getElementById('setAddress').value.trim(),
+      phone:         document.getElementById('setPhone').value.trim(),
+      currency:      document.getElementById('setCurrency').value.trim() || 'PKR'
     };
     await window.api.saveSettings(s);
-    App.settings = s;
+    Object.assign(App.settings, s);
     document.getElementById('sidebarPharmacyName').textContent = s.pharmacy_name || 'Pharmacy';
     showToast('Settings saved!', 'success');
   },

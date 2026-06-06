@@ -81,10 +81,13 @@ window.amcPrintHeader = function(mode = 'report', subtitle = '') {
   const s       = App.settings || {};
   const rawName = s.pharmacy_name || 'Al Madina Medical Center';
   const clinic  = rawName.replace(/^Madina\b/i, 'Al Madina');
-  const address = s.address || 'Batara Buner';
-  const phone   = s.phone  || '';
+  const address = s.address  || 'Batara Buner';
+  const phone   = s.phone    || '';
+  const tagline = s.tagline  || '';
+  const regNo   = s.reg_no   || '';
+  const logoB64 = s.logo_base64 || '';
 
-  const badge = (sz) => `<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${sz}" viewBox="0 0 100 100">
+  const defaultBadge = (sz) => `<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${sz}" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="48" fill="#fff" stroke="#c0392b" stroke-width="5"/>
     <circle cx="50" cy="50" r="40" fill="#fff5f5" stroke="#c0392b" stroke-width="1.2"/>
     <rect x="47" y="10" width="6" height="20" rx="2" fill="#c0392b"/>
@@ -95,28 +98,38 @@ window.amcPrintHeader = function(mode = 'report', subtitle = '') {
     <text x="50" y="88" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#444">BATARA BUNER</text>
   </svg>`;
 
+  const logoLeft = logoB64
+    ? `<img src="${logoB64}" style="width:${mode==='receipt'?'60':'82'}px;height:${mode==='receipt'?'50':'70'}px;object-fit:contain"/>`
+    : defaultBadge(mode === 'receipt' ? 64 : 86);
+
   if (mode === 'receipt') {
     return `<div style="text-align:center;padding:0 0 8px;font-family:'Courier New',monospace">
-      ${badge(64)}
+      ${logoLeft}
       <div style="font-size:15px;font-weight:bold;margin-top:4px">${clinic}</div>
-      ${address ? `<div style="font-size:11px">${address}</div>` : ''}
-      ${phone   ? `<div style="font-size:11px">&#9742; ${phone}</div>` : ''}
+      ${tagline  ? `<div style="font-size:10px;color:#666">${tagline}</div>` : ''}
+      ${address  ? `<div style="font-size:11px">${address}</div>` : ''}
+      ${phone    ? `<div style="font-size:11px">&#9742; ${phone}</div>` : ''}
+      ${regNo    ? `<div style="font-size:10px;color:#888">Reg: ${regNo}</div>` : ''}
       ${subtitle ? `<div style="margin-top:6px;padding:4px 0;border-top:1px dashed #000;border-bottom:1px dashed #000;font-size:13px;font-weight:bold;letter-spacing:1px">${subtitle}</div>` : '<div style="border-top:1px dashed #000;margin-top:6px"></div>'}
     </div>`;
   }
 
   /* ── A4 / wide report ── */
-  const navyCircle = `<div style="display:inline-flex;width:82px;height:82px;border-radius:50%;background:linear-gradient(135deg,#1a2f5e,#2a4a9e);align-items:center;justify-content:center">
-    <div style="color:#fff;font-family:Arial,sans-serif;font-size:7.5px;font-weight:700;text-align:center;line-height:1.55;padding:8px">AL MADINA<br/>MEDICAL<br/>CENTER<br/>BATARA<br/>BUNER</div>
-  </div>`;
+  const navyCircle = logoB64
+    ? `<img src="${logoB64}" style="width:82px;height:70px;object-fit:contain"/>`
+    : `<div style="display:inline-flex;width:82px;height:82px;border-radius:50%;background:linear-gradient(135deg,#1a2f5e,#2a4a9e);align-items:center;justify-content:center">
+        <div style="color:#fff;font-family:Arial,sans-serif;font-size:7.5px;font-weight:700;text-align:center;line-height:1.55;padding:8px">${clinic.toUpperCase().replace(/ /g,'<br/>')}</div>
+       </div>`;
 
   return `<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
     <tr>
-      <td width="92" valign="middle" align="center">${badge(86)}</td>
+      <td width="92" valign="middle" align="center">${logoLeft}</td>
       <td valign="middle" align="center" style="padding:4px 12px">
         <div style="font-size:22px;font-weight:900;color:#1a2f5e;letter-spacing:.5px;font-family:Arial,sans-serif">${clinic}</div>
-        ${address ? `<div style="font-size:12px;color:#555;margin-top:3px;font-family:Arial,sans-serif">${address}</div>` : ''}
-        ${phone   ? `<div style="font-size:12px;color:#555;font-family:Arial,sans-serif">Tel: ${phone}</div>` : ''}
+        ${tagline  ? `<div style="font-size:12px;color:#888;font-style:italic;font-family:Arial,sans-serif">${tagline}</div>` : ''}
+        ${address  ? `<div style="font-size:12px;color:#555;margin-top:3px;font-family:Arial,sans-serif">${address}</div>` : ''}
+        ${phone    ? `<div style="font-size:12px;color:#555;font-family:Arial,sans-serif">Tel: ${phone}</div>` : ''}
+        ${regNo    ? `<div style="font-size:10px;color:#888;font-family:Arial,sans-serif">Reg. No: ${regNo}</div>` : ''}
         ${subtitle ? `<div style="margin-top:10px;font-size:15px;font-weight:800;color:#c0392b;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;border-top:1px solid #ddd;padding-top:6px">${subtitle}</div>` : ''}
       </td>
       <td width="92" valign="middle" align="center">${navyCircle}</td>
