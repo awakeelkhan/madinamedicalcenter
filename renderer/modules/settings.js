@@ -199,6 +199,7 @@ window.SettingsPage = {
               <p class="small text-muted mb-1">Powered by HyperCloud.pk</p>
               <hr class="my-2"/>
               <div class="small"><strong>Support:</strong> HyperCloud.pk &nbsp;|&nbsp; Abdul Wakeel</div>
+              <div class="small text-muted mt-1"><i class="fab fa-whatsapp text-success me-1"></i><strong>0313-9986357</strong></div>
             </div>
           </div>
         </div>
