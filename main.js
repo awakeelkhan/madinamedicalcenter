@@ -224,6 +224,15 @@ ipcMain.handle('print-window', async () => {
   return true;
 });
 
+// ─── LABOUR ROOM ─────────────────────────────────────────────────────────────
+ipcMain.handle('lr-get-admissions',  (e, f)  => db.lrGetAdmissions(f));
+ipcMain.handle('lr-get-admission',   (e, id) => db.lrGetAdmission(id));
+ipcMain.handle('lr-save-admission',  (e, d)  => db.lrSaveAdmission(d));
+ipcMain.handle('lr-delete-admission',(e, id) => db.lrDeleteAdmission(id));
+ipcMain.handle('lr-save-delivery',   (e, d)  => db.lrSaveDelivery(d));
+ipcMain.handle('lr-get-delivery',    (e, id) => db.lrGetDelivery(id));
+ipcMain.handle('lr-get-stats',       (e, f, t) => db.lrGetStats(f, t));
+
 // ─── LOGO / BRANDING ─────────────────────────────────────────────────────────
 ipcMain.handle('select-logo-file', async () => {
   const win = mainWindow || BrowserWindow.getFocusedWindow();

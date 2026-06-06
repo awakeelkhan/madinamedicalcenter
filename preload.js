@@ -120,6 +120,15 @@ contextBridge.exposeInMainWorld('api', {
   // Print
   printWindow: () => ipcRenderer.invoke('print-window'),
 
+  // Labour Room
+  lrGetAdmissions:  (f)    => ipcRenderer.invoke('lr-get-admissions', f),
+  lrGetAdmission:   (id)   => ipcRenderer.invoke('lr-get-admission', id),
+  lrSaveAdmission:  (d)    => ipcRenderer.invoke('lr-save-admission', d),
+  lrDeleteAdmission:(id)   => ipcRenderer.invoke('lr-delete-admission', id),
+  lrSaveDelivery:   (d)    => ipcRenderer.invoke('lr-save-delivery', d),
+  lrGetDelivery:    (id)   => ipcRenderer.invoke('lr-get-delivery', id),
+  lrGetStats:       (f, t) => ipcRenderer.invoke('lr-get-stats', f, t),
+
   // Logo / Branding
   selectLogoFile:  ()        => ipcRenderer.invoke('select-logo-file'),
   readFileBase64:  (filePath) => ipcRenderer.invoke('read-file-base64', filePath),

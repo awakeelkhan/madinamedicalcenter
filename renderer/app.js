@@ -155,6 +155,7 @@ const pages = {
   frontdesk:  { title: 'Front Desk',         render: () => window.FrontDeskPage.render() },
   pathology:  { title: 'Pathology',          render: () => window.PathologyPage.render() },
   sehatcard:  { title: 'Sehat Card (SSP)',   render: () => window.SehatCardPage.render() },
+  labour:     { title: 'Labour Room',        render: () => window.LabourPage.render() },
 };
 
 function navigate(page) {

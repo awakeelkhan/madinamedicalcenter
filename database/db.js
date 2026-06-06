@@ -276,6 +276,9 @@ async function init() {
   // Sehat Card
   scInitTables();
 
+  // Labour Room
+  lrInitTables();
+
   persist();
 }
 
@@ -1518,6 +1521,8 @@ module.exports = {
   fdReportSummary, fdReportDaily, fdReportDoctors, fdReportLabTests, fdReportMonthly,
   pathoSearchVisits, pathoGetVisitTests, pathoGetResults, pathoSaveResults,
   pathoGetRecentResults, pathoGetCatalogDefaults,
+  lrInitTables, lrGetAdmissions, lrGetAdmission, lrSaveAdmission, lrDeleteAdmission,
+  lrSaveDelivery, lrGetDelivery, lrGetStats,
   scInitTables,
   scSearchPatients, scGetPatient, scSavePatient, scDeletePatient,
   scGetProcedures, scAddProcedure, scUpdateProcedure, scDeleteProcedure,
@@ -1925,4 +1930,142 @@ function scUpdateEntry(d) {
   persist();
 }
 function scDeleteEntry(id) { db.run(`DELETE FROM sc_ssp_entries WHERE id=?`,[id]); persist(); }
+
+// ─── LABOUR ROOM ──────────────────────────────────────────────────────────────
+
+function lrInitTables() {
+  db.run(`CREATE TABLE IF NOT EXISTS lr_admissions (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_name     TEXT NOT NULL,
+    husband_name     TEXT DEFAULT '',
+    age              INTEGER DEFAULT 0,
+    phone            TEXT DEFAULT '',
+    address          TEXT DEFAULT '',
+    gravida          INTEGER DEFAULT 1,
+    para             INTEGER DEFAULT 0,
+    gest_age         INTEGER DEFAULT 0,
+    admission_date   TEXT NOT NULL,
+    admission_type   TEXT DEFAULT 'normal',
+    doctor           TEXT DEFAULT '',
+    midwife          TEXT DEFAULT '',
+    refer_from       TEXT DEFAULT '',
+    bp               TEXT DEFAULT '',
+    status           TEXT DEFAULT 'admitted',
+    notes            TEXT DEFAULT '',
+    created_at       TEXT DEFAULT (datetime('now','localtime'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS lr_deliveries (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    admission_id     INTEGER NOT NULL REFERENCES lr_admissions(id),
+    delivery_date    TEXT NOT NULL,
+    delivery_type    TEXT DEFAULT 'svd',
+    baby_gender      TEXT DEFAULT 'M',
+    baby_weight      REAL DEFAULT 0,
+    apgar_score      TEXT DEFAULT '',
+    baby_condition   TEXT DEFAULT 'alive',
+    complications    TEXT DEFAULT '',
+    mother_condition TEXT DEFAULT '',
+    discharge_date   TEXT DEFAULT '',
+    charges          REAL DEFAULT 0,
+    notes            TEXT DEFAULT '',
+    created_at       TEXT DEFAULT (datetime('now','localtime'))
+  )`);
+}
+
+function lrGetAdmissions(filter = {}) {
+  const { search = '', status = '', date_from = '', date_to = '' } = filter;
+  let q = `SELECT a.*, d.delivery_type, d.delivery_date, d.baby_gender, d.id as delivery_id
+           FROM lr_admissions a
+           LEFT JOIN lr_deliveries d ON d.admission_id = a.id
+           WHERE 1=1`;
+  const p = [];
+  if (search) { q += ` AND (a.patient_name LIKE ? OR a.husband_name LIKE ? OR a.phone LIKE ?)`; const s = `%${search}%`; p.push(s,s,s); }
+  if (status) { q += ` AND a.status = ?`; p.push(status); }
+  if (date_from) { q += ` AND DATE(a.admission_date) >= ?`; p.push(date_from); }
+  if (date_to)   { q += ` AND DATE(a.admission_date) <= ?`; p.push(date_to); }
+  q += ` ORDER BY a.id DESC LIMIT 200`;
+  return all(q, p);
+}
+
+function lrGetAdmission(id) {
+  const a = get(`SELECT * FROM lr_admissions WHERE id=?`, [id]);
+  const d = get(`SELECT * FROM lr_deliveries WHERE admission_id=?`, [id]);
+  return { admission: a, delivery: d || null };
+}
+
+function lrSaveAdmission(data) {
+  if (data.id) {
+    db.run(`UPDATE lr_admissions SET patient_name=?,husband_name=?,age=?,phone=?,address=?,
+            gravida=?,para=?,gest_age=?,admission_date=?,admission_type=?,
+            doctor=?,midwife=?,refer_from=?,bp=?,status=?,notes=? WHERE id=?`,
+      [data.patient_name, data.husband_name||'', data.age||0, data.phone||'', data.address||'',
+       data.gravida||1, data.para||0, data.gest_age||0, data.admission_date,
+       data.admission_type||'normal', data.doctor||'', data.midwife||'',
+       data.refer_from||'', data.bp||'', data.status||'admitted', data.notes||'', data.id]);
+    persist();
+    return get(`SELECT * FROM lr_admissions WHERE id=?`, [data.id]);
+  }
+  db.run(`INSERT INTO lr_admissions
+    (patient_name,husband_name,age,phone,address,gravida,para,gest_age,
+     admission_date,admission_type,doctor,midwife,refer_from,bp,status,notes)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [data.patient_name, data.husband_name||'', data.age||0, data.phone||'', data.address||'',
+     data.gravida||1, data.para||0, data.gest_age||0, data.admission_date,
+     data.admission_type||'normal', data.doctor||'', data.midwife||'',
+     data.refer_from||'', data.bp||'', 'admitted', data.notes||'']);
+  persist();
+  return get(`SELECT * FROM lr_admissions ORDER BY id DESC LIMIT 1`);
+}
+
+function lrDeleteAdmission(id) {
+  db.run(`DELETE FROM lr_deliveries WHERE admission_id=?`, [id]);
+  db.run(`DELETE FROM lr_admissions WHERE id=?`, [id]);
+  persist();
+}
+
+function lrSaveDelivery(data) {
+  const existing = get(`SELECT id FROM lr_deliveries WHERE admission_id=?`, [data.admission_id]);
+  if (existing) {
+    db.run(`UPDATE lr_deliveries SET delivery_date=?,delivery_type=?,baby_gender=?,baby_weight=?,
+            apgar_score=?,baby_condition=?,complications=?,mother_condition=?,
+            discharge_date=?,charges=?,notes=? WHERE admission_id=?`,
+      [data.delivery_date, data.delivery_type||'svd', data.baby_gender||'M', data.baby_weight||0,
+       data.apgar_score||'', data.baby_condition||'alive', data.complications||'',
+       data.mother_condition||'', data.discharge_date||'', data.charges||0,
+       data.notes||'', data.admission_id]);
+  } else {
+    db.run(`INSERT INTO lr_deliveries
+      (admission_id,delivery_date,delivery_type,baby_gender,baby_weight,apgar_score,
+       baby_condition,complications,mother_condition,discharge_date,charges,notes)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [data.admission_id, data.delivery_date, data.delivery_type||'svd', data.baby_gender||'M',
+       data.baby_weight||0, data.apgar_score||'', data.baby_condition||'alive',
+       data.complications||'', data.mother_condition||'', data.discharge_date||'',
+       data.charges||0, data.notes||'']);
+  }
+  const status = data.discharge_date ? 'discharged' : 'delivered';
+  db.run(`UPDATE lr_admissions SET status=? WHERE id=?`, [status, data.admission_id]);
+  persist();
+  return get(`SELECT * FROM lr_deliveries WHERE admission_id=?`, [data.admission_id]);
+}
+
+function lrGetDelivery(admissionId) {
+  return get(`SELECT * FROM lr_deliveries WHERE admission_id=?`, [admissionId]);
+}
+
+function lrGetStats(dateFrom, dateTo) {
+  const p = [dateFrom || '2000-01-01', dateTo || '2099-12-31'];
+  const total     = get(`SELECT COUNT(*) as c FROM lr_admissions WHERE DATE(admission_date) BETWEEN ? AND ?`, p);
+  const delivered = get(`SELECT COUNT(*) as c FROM lr_admissions WHERE status IN ('delivered','discharged') AND DATE(admission_date) BETWEEN ? AND ?`, p);
+  const svd       = get(`SELECT COUNT(*) as c FROM lr_deliveries d JOIN lr_admissions a ON a.id=d.admission_id WHERE d.delivery_type='svd' AND DATE(a.admission_date) BETWEEN ? AND ?`, p);
+  const lscs      = get(`SELECT COUNT(*) as c FROM lr_deliveries d JOIN lr_admissions a ON a.id=d.admission_id WHERE d.delivery_type='lscs' AND DATE(a.admission_date) BETWEEN ? AND ?`, p);
+  const boys      = get(`SELECT COUNT(*) as c FROM lr_deliveries d JOIN lr_admissions a ON a.id=d.admission_id WHERE d.baby_gender='M' AND DATE(a.admission_date) BETWEEN ? AND ?`, p);
+  const girls     = get(`SELECT COUNT(*) as c FROM lr_deliveries d JOIN lr_admissions a ON a.id=d.admission_id WHERE d.baby_gender='F' AND DATE(a.admission_date) BETWEEN ? AND ?`, p);
+  return {
+    total: total?.c || 0, delivered: delivered?.c || 0,
+    svd: svd?.c || 0, lscs: lscs?.c || 0,
+    boys: boys?.c || 0, girls: girls?.c || 0
+  };
+}
 
