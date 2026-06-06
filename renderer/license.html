@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Activate Software</title>
+  <link href="vendor/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="vendor/css/all.min.css" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .act-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 32px;
+      width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+    .logo-area { text-align: center; margin-bottom: 24px; }
+    .logo-icon {
+      width: 68px; height: 68px;
+      background: linear-gradient(135deg, #1a2f5e, #2e5c9e);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 28px; color: #fff;
+      box-shadow: 0 4px 15px rgba(26,47,94,.4);
+    }
+    .logo-area h2 { color: #1a2035; font-weight: 700; font-size: 20px; }
+    .logo-area p  { color: #6c757d; font-size: 12px; margin-top: 3px; }
+    .install-id-box {
+      background: #f0f4ff;
+      border: 1.5px dashed #1a2f5e;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+    }
+    .install-id-box .label { font-size: 11px; color: #888; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+    .install-id-box .value {
+      font-size: 22px; font-weight: 800; color: #1a2f5e;
+      letter-spacing: 3px; font-family: 'Courier New', monospace;
+      margin-top: 4px;
+    }
+    .install-id-box .hint { font-size: 11px; color: #888; margin-top: 6px; }
+    .key-input {
+      font-size: 18px; font-weight: 700; letter-spacing: 3px;
+      font-family: 'Courier New', monospace;
+      text-align: center; text-transform: uppercase;
+      border: 2px solid #dee2e6; border-radius: 10px;
+      padding: 12px 10px; width: 100%;
+      transition: border-color .2s;
+    }
+    .key-input:focus { border-color: #1a2f5e; outline: none; box-shadow: 0 0 0 3px rgba(26,47,94,.15); }
+    .btn-activate {
+      background: linear-gradient(135deg, #1a2f5e, #2e5c9e);
+      border: none; border-radius: 8px;
+      padding: 13px; font-size: 15px; font-weight: 600;
+      color: #fff; width: 100%;
+      box-shadow: 0 4px 15px rgba(26,47,94,.3);
+      transition: transform .1s, box-shadow .2s;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+    .btn-activate:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,47,94,.4); }
+    .btn-activate:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .error-box {
+      background: #fff5f5; border: 1px solid #fec9c9; color: #dc3545;
+      border-radius: 8px; padding: 10px 14px; font-size: 13px;
+      display: none; margin-top: 12px;
+    }
+    .contact-note { text-align: center; font-size: 11px; color: #aaa; margin-top: 18px; }
+    .contact-note a { color: #1a2f5e; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="act-card">
+    <div class="logo-area">
+      <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+      <h2>Software Activation</h2>
+      <p>Al Madina Medical Center — Management System</p>
+    </div>
+
+    <div class="install-id-box">
+      <div class="label">Your Install ID</div>
+      <div class="value" id="installIdDisplay">Loading…</div>
+      <div class="hint">Share this ID with HyperCloud.pk to receive your license key.</div>
+    </div>
+
+    <label style="font-size:13px;font-weight:600;color:#495057;display:block;margin-bottom:6px">
+      Enter License Key
+    </label>
+    <input type="text" class="key-input" id="licenseKey"
+      placeholder="XXXX-XXXX-XXXX-XXXX"
+      maxlength="19"
+      oninput="formatKey(this)"/>
+
+    <div class="error-box" id="errBox">
+      <i class="fas fa-times-circle me-2"></i><span id="errText"></span>
+    </div>
+
+    <button class="btn-activate" id="activateBtn" onclick="activate()">
+      <i class="fas fa-unlock-alt me-2"></i>Activate
+    </button>
+
+    <div class="contact-note">
+      Need a key? Contact <a href="#">HyperCloud.pk — Abdul Wakeel</a><br/>
+      WhatsApp / Call: <strong>0300-0000000</strong>
+    </div>
+  </div>
+
+  <script>
+    function formatKey(input) {
+      let v = input.value.replace(/[^A-Fa-f0-9]/g, '').toUpperCase().substring(0, 16);
+      const parts = v.match(/.{1,4}/g) || [];
+      input.value = parts.join('-');
+    }
+
+    async function loadInstallId() {
+      const id = await window.api.getInstallId();
+      document.getElementById('installIdDisplay').textContent = id;
+    }
+
+    async function activate() {
+      const key = document.getElementById('licenseKey').value.trim();
+      const btn = document.getElementById('activateBtn');
+      const err = document.getElementById('errBox');
+      err.style.display = 'none';
+
+      if (key.replace(/-/g,'').length < 16) {
+        document.getElementById('errText').textContent = 'Please enter a complete 16-character license key.';
+        err.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Activating…';
+
+      const result = await window.api.activateLicense(key);
+      if (result.ok) {
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Activated!';
+      } else {
+        document.getElementById('errText').textContent = result.error || 'Invalid license key. Please contact HyperCloud.pk.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-unlock-alt me-2"></i>Activate';
+      }
+    }
+
+    loadInstallId();
+  </script>
+</body>
+</html>

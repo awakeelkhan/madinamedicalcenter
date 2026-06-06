@@ -70,13 +70,21 @@ async function init() {
     }
   });
 
-  const portableDir = process.env.PORTABLE_EXECUTABLE_DIR;
-  if (portableDir) {
-    const dataDir = path.join(portableDir, 'AlMadina-data');
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    dbPath = path.join(dataDir, 'pharmacy.db');
+  const appconfig = require('./appconfig');
+  const configuredPath = appconfig.getDbPath();
+  if (configuredPath) {
+    const dir = path.dirname(configuredPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    dbPath = configuredPath;
   } else {
-    dbPath = path.join(app.getPath('userData'), 'pharmacy.db');
+    const portableDir = process.env.PORTABLE_EXECUTABLE_DIR;
+    if (portableDir) {
+      const dataDir = path.join(portableDir, 'AlMadina-data');
+      if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+      dbPath = path.join(dataDir, 'pharmacy.db');
+    } else {
+      dbPath = path.join(app.getPath('userData'), 'pharmacy.db');
+    }
   }
 
   if (fs.existsSync(dbPath)) {

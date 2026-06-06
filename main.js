@@ -2,9 +2,20 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const db = require('./database/db');
+const appconfig = require('./database/appconfig');
 
-let mainWindow = null;
-let loginWindow = null;
+let mainWindow   = null;
+let loginWindow  = null;
+let licenseWindow = null;
+
+function createLicenseWindow() {
+  licenseWindow = new BrowserWindow({
+    width: 520, height: 580, resizable: false, center: true, frame: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname, 'preload.js') }
+  });
+  licenseWindow.loadFile(path.join(__dirname, 'renderer', 'license.html'));
+  licenseWindow.setMenuBarVisibility(false);
+}
 
 function createLoginWindow() {
   loginWindow = new BrowserWindow({
@@ -43,8 +54,12 @@ function createMainWindow() {
 }
 
 app.whenReady().then(async () => {
-  await db.init();
-  createLoginWindow();
+  if (!appconfig.isLicensed()) {
+    createLicenseWindow();
+  } else {
+    await db.init();
+    createLoginWindow();
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -207,4 +222,36 @@ ipcMain.handle('print-window', async () => {
     mainWindow.webContents.print({ silent: false, printBackground: true });
   }
   return true;
+});
+
+// ─── LICENSE ─────────────────────────────────────────────────────────────────
+ipcMain.handle('get-install-id', () => appconfig.getInstallId());
+
+ipcMain.handle('activate-license', async (e, key) => {
+  appconfig.saveLicense(key);
+  if (appconfig.isLicensed()) {
+    await db.init();
+    createLoginWindow();
+    if (licenseWindow) { licenseWindow.close(); licenseWindow = null; }
+    return { ok: true };
+  }
+  return { ok: false, error: 'Invalid license key. Contact HyperCloud.pk.' };
+});
+
+// ─── DB PATH (network share config) ─────────────────────────────────────────
+ipcMain.handle('get-db-path', () => ({ current: appconfig.getDbPath() || db.getDbPath() }));
+
+ipcMain.handle('set-db-path', (e, newPath) => {
+  appconfig.saveDbPath(newPath || '');
+  return { ok: true };
+});
+
+ipcMain.handle('select-db-path', async () => {
+  const win = mainWindow || BrowserWindow.getFocusedWindow();
+  const result = await dialog.showOpenDialog(win, {
+    title: 'Select or create pharmacy.db location',
+    properties: ['openFile', 'showHiddenFiles'],
+    filters: [{ name: 'SQLite Database', extensions: ['db'] }]
+  });
+  return result.canceled ? null : result.filePaths[0];
 });

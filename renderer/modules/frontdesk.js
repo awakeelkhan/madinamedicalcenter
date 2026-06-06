@@ -557,13 +557,17 @@ window.FrontDeskPage = {
                 <td><small>${formatDate(v.visit_date)}</small></td>
                 <td class="text-end fw-bold">${formatCurrency(v.total)}</td>
                 <td>
-                  <button class="btn btn-xs btn-outline-primary" style="font-size:11px;padding:2px 8px"
+                  <button class="btn btn-xs btn-outline-primary" style="font-size:11px;padding:2px 8px" title="View"
                     onclick="FrontDeskPage._viewVisit(${v.id})">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn btn-xs btn-outline-secondary" style="font-size:11px;padding:2px 8px"
+                  <button class="btn btn-xs btn-outline-secondary" style="font-size:11px;padding:2px 8px" title="Reprint Receipt"
                     onclick="FrontDeskPage._reprintVisit(${v.id})">
                     <i class="fas fa-print"></i>
+                  </button>
+                  <button class="btn btn-xs btn-outline-success" style="font-size:11px;padding:2px 8px" title="Print MR Card"
+                    onclick="FrontDeskPage._printMRCard(${v.id})">
+                    <i class="fas fa-id-card"></i>
                   </button>
                 </td>
               </tr>`).join('')}
@@ -612,6 +616,124 @@ window.FrontDeskPage = {
       charges.map(c => ({ description: c.description, type: c.charge_type, amount: c.amount, qty: c.qty })),
       v.subtotal, v.discount, v.total, v.paid, v.change_amount
     );
+  },
+
+  // ── MR CARD PRINT ───────────────────────────────────────────────────────────
+  async _printMRCard(id) {
+    const { visit: v } = await window.api.fdGetVisitDetail(id);
+    const s       = App.settings || {};
+    const clinic  = (s.pharmacy_name || 'Al Madina Medical Center').replace(/^Madina\b/i, 'Al Madina');
+    const address = s.address || 'Batara Buner';
+    const phone   = s.phone || '';
+    const mrNo    = 'MMC-' + String(v.id).padStart(6, '0');
+    const gender  = v.gender === 'M' ? 'Male' : v.gender === 'F' ? 'Female' : 'Child';
+    const issueDate = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+      <style>
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:Arial,sans-serif; background:#f0f4ff; display:flex; justify-content:center; padding:30px; }
+        .card {
+          width:340px; background:#fff; border-radius:14px;
+          box-shadow:0 4px 24px rgba(0,0,0,.18); overflow:hidden;
+        }
+        .card-header {
+          background:linear-gradient(135deg,#1a2f5e,#2e5c9e);
+          color:#fff; padding:14px 16px 12px; text-align:center;
+        }
+        .card-header .clinic-name { font-size:14px; font-weight:800; letter-spacing:.5px; }
+        .card-header .clinic-sub  { font-size:10px; opacity:.8; margin-top:2px; }
+        .mr-badge {
+          background:#fff; color:#1a2f5e;
+          font-size:20px; font-weight:900; letter-spacing:3px;
+          font-family:'Courier New',monospace;
+          border-radius:8px; padding:6px 14px;
+          display:inline-block; margin:10px 0 6px;
+          box-shadow:0 2px 8px rgba(0,0,0,.15);
+        }
+        .card-body { padding:14px 16px; }
+        .avatar {
+          width:70px; height:70px; border-radius:50%;
+          background:#e8edf8; border:3px solid #1a2f5e;
+          display:flex; align-items:center; justify-content:center;
+          font-size:28px; color:#1a2f5e; float:right; margin-left:12px;
+        }
+        .field { margin-bottom:7px; }
+        .field .lbl { font-size:9px; text-transform:uppercase; color:#888; letter-spacing:.5px; }
+        .field .val { font-size:13px; font-weight:700; color:#1a2035; margin-top:1px; }
+        .field .val.big { font-size:15px; }
+        .divider { border:none; border-top:1px dashed #dde; margin:10px 0; }
+        .footer {
+          background:#f0f4ff; padding:8px 16px;
+          display:flex; justify-content:space-between; align-items:center;
+          border-top:1px solid #dde;
+        }
+        .footer .issue { font-size:10px; color:#888; }
+        .footer .hotline { font-size:11px; font-weight:700; color:#1a2f5e; }
+        @media print {
+          body { background:#fff; padding:10px; }
+          .card { box-shadow:none; border:1px solid #ccc; }
+        }
+      </style>
+    </head><body>
+      <div class="card">
+        <div class="card-header">
+          <div class="clinic-name">${clinic}</div>
+          <div class="clinic-sub">${address}${phone ? ' &nbsp;|&nbsp; ' + phone : ''}</div>
+          <div class="mr-badge">${mrNo}</div>
+          <div style="font-size:10px;opacity:.7;margin-bottom:2px">MEDICAL RECORD CARD</div>
+        </div>
+        <div class="card-body">
+          <div class="avatar"><i class="fas fa-user"></i></div>
+          <div class="field">
+            <div class="lbl">Patient Name</div>
+            <div class="val big">${(v.patient_name || '—').toUpperCase()}</div>
+          </div>
+          <div class="field">
+            <div class="lbl">Father / Husband</div>
+            <div class="val">${(v.father_name || '—').toUpperCase()}</div>
+          </div>
+          <hr class="divider"/>
+          <div style="display:flex;gap:12px">
+            <div class="field" style="flex:1">
+              <div class="lbl">CNIC / Form-B</div>
+              <div class="val" style="font-size:11px">${v.nic || '—'}</div>
+            </div>
+            <div class="field" style="flex:1">
+              <div class="lbl">Phone</div>
+              <div class="val" style="font-size:11px">${v.phone || '—'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div class="field" style="flex:1">
+              <div class="lbl">Age</div>
+              <div class="val">${v.age || '—'}</div>
+            </div>
+            <div class="field" style="flex:1">
+              <div class="lbl">Gender</div>
+              <div class="val">${gender}</div>
+            </div>
+            <div class="field" style="flex:1">
+              <div class="lbl">Blood Group</div>
+              <div class="val">—</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="lbl">Address</div>
+            <div class="val" style="font-size:11px">${v.address || '—'}</div>
+          </div>
+        </div>
+        <div class="footer">
+          <div class="issue">Issued: ${issueDate}</div>
+          <div class="hotline">MR#: ${mrNo}</div>
+        </div>
+      </div>
+      <script>window.onload=function(){window.print();}<\/script>
+    </body></html>`;
+
+    const w = window.open('', '_blank', 'width=420,height=560');
+    w.document.write(html);
+    w.document.close();
   },
 
   // ── DOCTORS MANAGEMENT ───────────────────────────────────────────────────────

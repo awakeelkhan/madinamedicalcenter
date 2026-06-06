@@ -99,23 +99,111 @@ window.SettingsPage = {
             <div class="card-header"><i class="fas fa-info-circle me-2"></i>About</div>
             <div class="card-body">
               <div class="text-center py-2">
-                <div class="mb-2" style="font-size:48px">💊</div>
-                <h5 class="fw-bold text-primary">Wholesale Pharmacy System</h5>
-                <p class="text-muted small">Version 1.0.0</p>
+                <div class="mb-2" style="font-size:48px">🏥</div>
+                <h5 class="fw-bold text-primary">Al Madina Medical Center</h5>
+                <p class="text-muted small">Version 1.0.0 &mdash; HyperCloud.pk</p>
                 <hr/>
                 <div class="text-start small text-muted">
                   <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Offline — No internet required</div>
-                  <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>SQLite local database</div>
+                  <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>SQLite local / network database</div>
                   <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>USB Backup support</div>
-                  <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Invoice & Ledger system</div>
+                  <div class="mb-1"><i class="fas fa-check-circle text-success me-2"></i>Invoice &amp; Ledger system</div>
                   <div><i class="fas fa-check-circle text-success me-2"></i>Multi-user with roles</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        ${App.currentUser && App.currentUser.role === 'admin' ? `
+        <!-- Admin: Shared DB Path -->
+        <div class="col-md-6">
+          <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+              <i class="fas fa-database me-2"></i>Shared Database Path
+              <span class="badge bg-dark ms-2" style="font-size:9px">ADMIN ONLY</span>
+            </div>
+            <div class="card-body">
+              <p class="small text-muted mb-2">
+                Set a network path so all departments share one database.
+                Leave empty to use local. <strong>Restart required after change.</strong>
+              </p>
+              <div class="input-group mb-2">
+                <input type="text" class="form-control form-control-sm font-monospace" id="dbPathInput"
+                  placeholder="e.g. \\\\SERVER\\share\\pharmacy.db"/>
+                <button class="btn btn-outline-secondary btn-sm" title="Browse" onclick="SettingsPage._browseDbPath()">
+                  <i class="fas fa-folder-open"></i>
+                </button>
+              </div>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-warning btn-sm" onclick="SettingsPage._saveDbPath()">
+                  <i class="fas fa-save me-1"></i>Save Path
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="SettingsPage._clearDbPath()">
+                  <i class="fas fa-times me-1"></i>Clear (use local)
+                </button>
+              </div>
+              <div class="small text-muted" id="dbPathCurrent">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin: License -->
+        <div class="col-md-6">
+          <div class="card border-success">
+            <div class="card-header bg-success text-white">
+              <i class="fas fa-shield-alt me-2"></i>License
+              <span class="badge bg-dark ms-2" style="font-size:9px">ADMIN ONLY</span>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="fas fa-check-circle text-success fa-lg"></i>
+                <span class="fw-bold">Software Activated</span>
+              </div>
+              <p class="small text-muted mb-1">Powered by HyperCloud.pk</p>
+              <hr class="my-2"/>
+              <div class="small"><strong>Support:</strong> HyperCloud.pk &nbsp;|&nbsp; Abdul Wakeel</div>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
       </div>
     `;
+    if (App.currentUser && App.currentUser.role === 'admin') this._loadDbPath();
+  },
+
+  async _loadDbPath() {
+    const res = await window.api.getDbPath();
+    const inp = document.getElementById('dbPathInput');
+    const cur = document.getElementById('dbPathCurrent');
+    if (!inp || !cur) return;
+    if (res && res.current) {
+      inp.value = res.current;
+      cur.innerHTML = '<i class="fas fa-server text-warning me-1"></i>Active: <code style="font-size:11px">' + res.current + '</code>';
+    } else {
+      cur.innerHTML = '<i class="fas fa-database text-success me-1"></i>Using local database (default)';
+    }
+  },
+
+  async _browseDbPath() {
+    const p = await window.api.selectDbPath();
+    if (p) document.getElementById('dbPathInput').value = p;
+  },
+
+  async _saveDbPath() {
+    const val = (document.getElementById('dbPathInput').value || '').trim();
+    if (!val) { showToast('Enter a path first', 'warning'); return; }
+    await window.api.setDbPath(val);
+    showToast('Path saved. Restart app to apply.', 'success');
+    this._loadDbPath();
+  },
+
+  async _clearDbPath() {
+    await window.api.setDbPath('');
+    document.getElementById('dbPathInput').value = '';
+    showToast('Cleared. Restart app to use local database.', 'success');
+    this._loadDbPath();
   },
 
   async saveSettings() {

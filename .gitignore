@@ -1,6 +1,2 @@
 node_modules/
-dist/
-shmis_1.3/
-*.db
-*.db-journal
 package-lock.json

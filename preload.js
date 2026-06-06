@@ -119,4 +119,13 @@ contextBridge.exposeInMainWorld('api', {
 
   // Print
   printWindow: () => ipcRenderer.invoke('print-window'),
+
+  // License
+  getInstallId:    ()    => ipcRenderer.invoke('get-install-id'),
+  activateLicense: (key) => ipcRenderer.invoke('activate-license', key),
+
+  // DB Path (admin — network share)
+  getDbPath:    ()    => ipcRenderer.invoke('get-db-path'),
+  setDbPath:    (p)   => ipcRenderer.invoke('set-db-path', p),
+  selectDbPath: ()    => ipcRenderer.invoke('select-db-path'),
 });
