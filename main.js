@@ -270,10 +270,11 @@ ipcMain.handle('set-db-path', (e, newPath) => {
 
 ipcMain.handle('select-db-path', async () => {
   const win = mainWindow || BrowserWindow.getFocusedWindow();
-  const result = await dialog.showOpenDialog(win, {
-    title: 'Select or create pharmacy.db location',
-    properties: ['openFile', 'showHiddenFiles'],
+  const result = await dialog.showSaveDialog(win, {
+    title: 'Choose Database Location (network drive or local folder)',
+    defaultPath: 'pharmacy.db',
+    buttonLabel: 'Use This Location',
     filters: [{ name: 'SQLite Database', extensions: ['db'] }]
   });
-  return result.canceled ? null : result.filePaths[0];
+  return result.canceled ? null : result.filePath;
 });

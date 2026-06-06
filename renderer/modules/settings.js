@@ -161,15 +161,23 @@ window.SettingsPage = {
             </div>
             <div class="card-body">
               <p class="small text-muted mb-2">
-                Set a network path so all departments share one database.
+                Type a path <strong>or</strong> browse to any location including network drives.
                 Leave empty to use local. <strong>Restart required after change.</strong>
               </p>
               <div class="input-group mb-2">
                 <input type="text" class="form-control form-control-sm font-monospace" id="dbPathInput"
-                  placeholder="e.g. \\\\SERVER\\share\\pharmacy.db"/>
-                <button class="btn btn-outline-secondary btn-sm" title="Browse" onclick="SettingsPage._browseDbPath()">
+                  placeholder="e.g. \\\\192.168.1.10\\share\\pharmacy.db"/>
+                <button class="btn btn-outline-secondary btn-sm" title="Browse to any folder or network drive"
+                  onclick="SettingsPage._browseDbPath()">
                   <i class="fas fa-folder-open"></i>
                 </button>
+              </div>
+              <div class="alert alert-info p-2 mb-2" style="font-size:11px">
+                <i class="fas fa-info-circle me-1"></i>
+                For network drives, you can type the path directly:<br/>
+                <code>\\192.168.1.10\SharedFolder\pharmacy.db</code><br/>
+                <code>Z:\SharedFolder\pharmacy.db</code> (if drive is mapped)<br/>
+                Or use Browse → type the server address in the file dialog address bar.
               </div>
               <div class="d-flex gap-2 mb-2">
                 <button class="btn btn-warning btn-sm" onclick="SettingsPage._saveDbPath()">
